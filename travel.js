@@ -1,20 +1,20 @@
 const fs = require('fs')
+//import fs from 'fs'
 
-var w, h, exit, lines, data,
+var w, h, notSame, lines, data, max,
     topEnd, botEnd, matrix = []
 
-var max = 0
+data = fs.readFileSync('ijones.in', 'utf8')
 
-function init() {
-    data = fs.readFileSync('ijones.in', 'utf8')
-    w = data[0]
-    h = data[2]
 
-    console.log('w = ' + w + ' h = ' + h)
-
+function init(data) {
+    max = 0
     lines = data.split('\n')
-    lines.splice(0, 1)
 
+    w = lines[0].split(' ')[0]
+    h = lines[0].split(' ')[1]
+
+    lines.splice(0, 1)
     for (let i = 0; i < h; i++) {
         matrix[i] = []
         for (let j = 0; j < w; j++) {
@@ -27,40 +27,39 @@ function init() {
     for (let i = 0; i < h; i++) {
         travel(i, 0)
     }
-    console.log(max)
+    return max
 }
 
 function travel(hPos, wPos) {
     let current = matrix[hPos][wPos]
     let currentIDX = [hPos, wPos]
     let sameTiles = []
-
+    notSame = false;
     for (let i = 0; i < h; i++) {
         for (let j = wPos + 1; j < w; j++) {
-            
             if (current === matrix[i][j]) {
                 sameTiles.push([i, j])
             }
         }
     }
-    console.log(current, currentIDX, max)
+    
+    if (current != matrix[hPos][wPos+1] && wPos < w-1) {
+        travel(hPos, wPos+1)
+    }
+    
+    //console.log(current, currentIDX, max)
     if (sameTiles.length === 0) {
         if (JSON.stringify(currentIDX) === JSON.stringify(topEnd) ||
             JSON.stringify(currentIDX) === JSON.stringify(botEnd)) {
             return max += 1
-        }
-        else if (wPos < w-1) {
-            return travel(hPos, wPos + 1)
-        }
-        else {return}
-
-        
+        }        
+        else { return }
     }
 
     sameTiles.forEach(tile => {
         currentIDX = tile
-        i = tile[0]
-        j = tile[1]
+        let i = tile[0]
+        let j = tile[1]
 
         for (; i < h; i++) {
             for (; j < w; j++) {
@@ -74,11 +73,10 @@ function travel(hPos, wPos) {
                 return travel(i, j)
             }
         }
+        
     })
     return max
 }
-
-
-
-init()
+//console.log(init(data))
 fs.writeFile('ijones.out', `${max}`, function (err) { })
+module.exports = init
